@@ -1,0 +1,24 @@
+/* GeneTable.css */
+.gene-table-container {
+    max-height: 300px; /* Adjust the height as needed */
+    overflow-y: auto; /* Add scroll bar if content exceeds the container height */
+    margin-bottom: 20px; /* Add some space below the table for the 'Get Statistics' button */
+  }
+  
+  table {
+    width: 100%; /* Make table use full width of the container */
+    border-collapse: collapse; /* Optional: for styling */
+  }
+  
+  th, td {
+    border: 1px solid #ddd; /* Optional: for styling */
+    padding: 8px; /* Optional: for styling */
+    text-align: left; /* Optional: for styling */
+  }
+  
+  th {
+    background-color: #f2f2f2; /* Optional: for styling */
+    position: sticky;
+    top: 0; /* Make the header sticky */
+  }
+  

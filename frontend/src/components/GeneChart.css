@@ -1,0 +1,6 @@
+.chart-container {
+    width: 80%; /* or any other percentage */
+    height: 400px; /* or any other fixed height */
+    margin: auto; /* optional, for centering the chart */
+  }
+  

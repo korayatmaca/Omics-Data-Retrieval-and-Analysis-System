@@ -1,62 +1,69 @@
-import React, { useState, useEffect } from 'react';
-import { fetchGeneData, fetchGeneAnalysis } from './services/api';
+// App.js
+import React, { useState } from 'react';
+import axios from 'axios';
+import DataSubmission from './components/DataSubmission';
+import GeneTable from './components/GeneTable';
+import GeneChart from './components/GeneChart';
+
+const DATA_ENDPOINT = 'http://localhost:5000/api/gene-data';
+const STATS_ENDPOINT = 'http://localhost:5000/api/gene-analysis';
 
 function App() {
-  const [geneIDs, setGeneIDs] = useState([]);
-  const [geneData, setGeneData] = useState([]);
-  const [analysisResults, setAnalysisResults] = useState({});
+  const [geneDataEntries, setGeneDataEntries] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [stats, setStats] = useState({});
 
-  const handleGeneIDsChange = (event) => {
-    setGeneIDs(event.target.value.split(','));
+  const fetchGeneData = async (ids) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await axios.get(DATA_ENDPOINT, { params: { geneIDs: ids.toString() } });
+      setGeneDataEntries(response.data);
+    } catch (err) {
+      setError('Error fetching gene data. Please try again.');
+      console.error(err);
+    }
+    setLoading(false);
   };
 
-  const fetchGeneDataAndAnalysis = async () => {
-    try {
-      const response = await fetchGeneData(geneIDs);
-      setGeneData(response.data);
+  const fetchStatistics = async () => {
+    setLoading(true);
+    setError(null);
 
-      for (const gene of geneIDs) {
-        const analysisResponse = await fetchGeneAnalysis(gene);
-        setAnalysisResults((prevResults) => ({
-          ...prevResults,
-          [gene]: analysisResponse.data,
-        }));
-      }
-    } catch (error) {
-      console.error(error);
+    try {
+      const geneIds = geneDataEntries.map(entry => entry.gene); // Get all gene IDs from current data
+      const response = await axios.get(STATS_ENDPOINT, { params: { geneIDs: geneIds.toString() } });
+      setStats({ 
+        mean: response.data.mean, 
+        median: response.data.median, 
+        variance: response.data.variance 
+      });
+      } catch (err) {
+      setError('Error fetching statistics. Please try again.');
+      console.error(err);
     }
+
+    setLoading(false);
   };
 
   return (
-    <div className="App">
-      <h1>Omics Data Retrieval and Analysis</h1>
-      <div>
-        <label htmlFor="geneIDs">Enter Gene IDs (comma-separated):</label>
-        <input type="text" id="geneIDs" onChange={handleGeneIDsChange} />
-        <button onClick={fetchGeneDataAndAnalysis}>Fetch Data and Analyze</button>
-      </div>
-      <div>
-        <h2>Fetched Data:</h2>
-        <ul>
-          {geneData.map((gene, index) => (
-            <li key={index}>{JSON.stringify(gene)}</li>
-            
-          ))}
-        </ul>
-      </div>
-      <div>
-        <h2>Analysis Results:</h2>
-        <ul>
-          {Object.entries(analysisResults).map(([gene, analysis], index) => (
-            <li key={index}>
-              <strong>{gene}</strong>
-              <div>Mean: {analysis.mean}</div>
-              <div>Median: {analysis.median}</div>
-              <div>Variance: {analysis.variance}</div>
-            </li>
-          ))}
-        </ul>
-      </div>
+    <div>
+      <h1>Omics Data Retrieval and Analysis System</h1>
+      <DataSubmission onSubmitGeneIds={fetchGeneData} />
+      {loading && <p>Loading...</p>}
+      {error && <p>Error: {error}</p>}
+      <GeneTable geneDataEntries={geneDataEntries} />
+      <button onClick={fetchStatistics} disabled={loading || geneDataEntries.length === 0}>
+        Get Statistics
+      </button>
+      {stats.mean && <div>
+        <h2>Statistics:</h2>
+        <p>Mean: {stats.mean}</p>
+        <p>Median: {stats.median}</p>
+        <p>Variance: {stats.variance}</p>
+      </div>}
+      {geneDataEntries.length > 0 && <GeneChart geneDataEntries={geneDataEntries} />}
     </div>
   );
 }

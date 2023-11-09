@@ -3,7 +3,6 @@ const GeneExpression = require('../models/Genes');
 // Gen verilerini alma işlemi
 const getGeneData = async (req, res) => {
     try {
-        console.log("burası çalıştı");
         const geneIDs = req.query.geneIDs.split(',');
         const genes = await GeneExpression.find({ gene: { $in: geneIDs } });
 
