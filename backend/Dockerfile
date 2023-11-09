@@ -6,10 +6,10 @@ RUN mkdir -p /usr/src/app/backend
 # Set working directory so that all subsequent command runs in this folder
 WORKDIR /usr/src/app/backend
 # Copy package json and install dependencies
-COPY package*.json ./
+COPY package.json /usr/src/app/
 RUN npm install
 # Copy our app
-COPY . .
+COPY . /usr/src/app
 # Expose port to access server
 EXPOSE 5000
 # Command to run our app

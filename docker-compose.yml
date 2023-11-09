@@ -22,5 +22,11 @@ services:
   # Create database container
   mongo:
     image: mongo
+    restart: always
+    expose:
+     - 27017
     ports:
-        - "27017:27017"
+      - 27017:27017
+    volumes:
+    - /data/db
+
