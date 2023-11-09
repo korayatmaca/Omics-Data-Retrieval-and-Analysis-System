@@ -1,38 +1,64 @@
-import React, { Component } from "react";
-import logo from "./logo.svg";
-import "./App.css";
+import React, { useState, useEffect } from 'react';
+import { fetchGeneData, fetchGeneAnalysis } from './services/api';
 
-class App extends Component {
-  constructor(props) { // initialize state
-    super(props);
-    this.state = { apiResponse: "", dbResponse: "" };
-  }
-  callAPI() { // fetch data from backend 
-    fetch("http://localhost:5000/testAPI")
-      .then((res) => res.text())
-      .then((res) => this.setState({ apiResponse: res }));
-  }
-  callDB() {
-    fetch("http://localhost:5000/testDB")
-        .then(res => res.text())
-        .then(res => this.setState({ dbResponse: res }))
-        .catch(err => err);
-}
+function App() {
+  const [geneIDs, setGeneIDs] = useState([]);
+  const [geneData, setGeneData] = useState([]);
+  const [analysisResults, setAnalysisResults] = useState({});
 
-  componentWillMount() {
-    this.callAPI();
-    this.callDB();
-  }
-  render() { // render data
-    return (
-      <div className="App">
-        <header className="App-header">
-          <p className="App-intro">{this.state.apiResponse}</p>
-          <p className="App-intro">{this.state.dbResponse}</p>
-        </header>
+  const handleGeneIDsChange = (event) => {
+    setGeneIDs(event.target.value.split(','));
+  };
+
+  const fetchGeneDataAndAnalysis = async () => {
+    try {
+      const response = await fetchGeneData(geneIDs);
+      setGeneData(response.data);
+
+      for (const gene of geneIDs) {
+        const analysisResponse = await fetchGeneAnalysis(gene);
+        setAnalysisResults((prevResults) => ({
+          ...prevResults,
+          [gene]: analysisResponse.data,
+        }));
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  return (
+    <div className="App">
+      <h1>Omics Data Retrieval and Analysis</h1>
+      <div>
+        <label htmlFor="geneIDs">Enter Gene IDs (comma-separated):</label>
+        <input type="text" id="geneIDs" onChange={handleGeneIDsChange} />
+        <button onClick={fetchGeneDataAndAnalysis}>Fetch Data and Analyze</button>
       </div>
-    );
-  }
+      <div>
+        <h2>Fetched Data:</h2>
+        <ul>
+          {geneData.map((gene, index) => (
+            <li key={index}>{JSON.stringify(gene)}</li>
+            
+          ))}
+        </ul>
+      </div>
+      <div>
+        <h2>Analysis Results:</h2>
+        <ul>
+          {Object.entries(analysisResults).map(([gene, analysis], index) => (
+            <li key={index}>
+              <strong>{gene}</strong>
+              <div>Mean: {analysis.mean}</div>
+              <div>Median: {analysis.median}</div>
+              <div>Variance: {analysis.variance}</div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
 }
 
 export default App;

@@ -5,7 +5,15 @@ const geneExpressionSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
-  }
+  },
+  expressionValues: {
+    type: Number,
+    required: true,
+  },
+  samplenames: {
+    type: String,
+    required: true,
+  },
 }, {
   collection: 'test', // Kullanılacak koleksiyonun adını belirtin
 });
